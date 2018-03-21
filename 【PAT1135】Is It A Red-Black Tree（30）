@@ -1,0 +1,112 @@
+【PAT1135】Is It A Red-Black Tree（30）
+
+题目链接
+https://www.patest.cn/contests/pat-a-practise/1135
+
+ 坑点：
+
+1. 根可能为红节点
+
+2. 黑高度不一样
+
+3. 每个红节点的两个子节点必为黑色
+
+#include <iostream>
+#include <string>
+#include <map>
+#include <set>
+#include <list>
+#include <vector>
+#include <deque>
+#include <unordered_set>
+#include <algorithm>
+#include <unordered_map>
+#include <stack>
+#include <cstdio>
+using namespace std;
+
+int num;
+struct treeNode {
+    treeNode *left = NULL, *right = NULL;
+    int key;
+    treeNode(int key):key(key),left(NULL),right(NULL){}
+    treeNode(){}
+};
+
+void insert(treeNode *root, int key)
+{
+    auto p = root;
+    while (true)
+    {
+        if (abs(key) > abs(p->key))
+        {
+            if (p->right == NULL)
+            {
+                p->right = new treeNode(key);
+                break;
+            }
+            p = p->right;
+        }
+        else
+        {
+            if (p->left == NULL)
+            {
+                p->left = new treeNode(key);
+                break;
+            }
+            p = p->left;
+        }
+    }
+}
+void dfs(treeNode *tn,int cnt,bool &success)
+{
+    if (tn == NULL)
+    {
+        if (num == -1)
+            num = cnt;
+        else if (num != cnt)    //判断从根节点到所有叶节点的黑高度
+            success = false;
+        return;
+    }
+    if (tn->key > 0)
+        cnt++;    //黑高度+1
+    else{
+        if (tn->left != NULL&&tn->left->key < 0)    //判断红节点的儿子是否还是红节点
+            success = false;
+        if (tn->right != NULL&&tn->right->key < 0)
+            success = false;
+    }
+    dfs(tn->left, cnt, success);
+    dfs(tn->right, cnt, success);
+}
+int main()
+{
+    int num_case;
+    cin >> num_case;
+    
+    while (num_case--)
+    {
+        treeNode* root = new treeNode;
+        int num_nodes;
+        bool success = true;
+        
+        cin >> num_nodes;
+        int nodeKey;
+        cin >> nodeKey;
+        root->key = nodeKey;
+        num_nodes--;
+        while (num_nodes--)
+        {
+            cin >> nodeKey;
+            insert(root, nodeKey);
+        }
+        num = -1;
+        dfs(root,0,success);
+        if (root->key < 0)    //根为红节点
+            success = false;
+        string s = success ? "Yes" : "No";
+        cout << s << endl;
+    }
+    
+    return 0;
+}
