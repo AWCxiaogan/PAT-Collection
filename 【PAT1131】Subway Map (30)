@@ -1,0 +1,110 @@
+【PAT1131】Subway Map (30)
+
+题目传送门 https://www.patest.cn/contests/pat-a-practise/1131
+
+思路：
+
+1. 记录下每个站牌的相邻站牌，用邻接表
+
+2. 对当前站牌的相邻站牌进行dfs
+
+3. 访问过的站牌要标记
+
+4. 用10000*10000的二维数组标记每两个站牌所属的线路，以便统计换乘次数
+
+5. dfs过程中更新最小站牌数和最小换乘数
+
+#include <iostream>
+#include <string>
+#include <string.h>
+#include <map>
+#include <set>
+#include <list>
+#include <vector>
+#include <deque>
+#include <unordered_set>
+#include <algorithm>
+#include <unordered_map>
+#include <stack>
+#include <cstdio>
+using namespace std;
+
+vector<vector<int>> v(10000);    //存放索引站牌的相邻站牌
+int line[10000][10000], visit[10000], minCnt, minTransfer,start,end1 ;
+vector<int> path, tempPath;
+
+//tpath路径对应的换乘次数
+int transferCnt(vector<int> tpath) {
+    int cnt = -1, preLine = 0;
+    for (int i = 1;i < tpath.size();i++) {
+        if (line[tpath[i - 1]][tpath[i]] != preLine)
+            cnt++;
+        preLine = line[tpath[i - 1]][tpath[i]];
+    }
+    return cnt;
+}
+
+void dfs(int node, int cnt) {
+    if (node == end1 && (cnt < minCnt || (cnt == minCnt&&transferCnt(tempPath) < minTransfer))) {
+        minCnt = cnt;
+        minTransfer = transferCnt(tempPath);
+        path = tempPath;
+    }
+    if (node == end1)return;
+    for (int i = 0;i < v[node].size();i++) {    //对当前站牌的所有相邻站牌dfs，已访问过的站牌要加锁
+        int nextNode = v[node][i];
+        if (visit[nextNode] == 0) {
+            visit[nextNode] = 1;            //加锁
+            tempPath.push_back(nextNode);    //加锁
+            dfs(nextNode, cnt + 1);            //dfs
+            visit[nextNode] = 0;            //解锁
+            tempPath.pop_back();            //解锁
+        }
+    }
+}
+
+int main()
+{
+    int n, m,k,pre,temp;
+    cin >> n;
+    for (int i = 1;i <= n;i++)
+    {
+        cin >> m >> pre;
+        for (int j = 1;j < m;j++)
+        {
+            scanf("%d", &temp);
+            v[pre].push_back(temp);        //v存放一个站点的下一个站点
+            v[temp].push_back(pre);
+            line[pre][temp] = line[temp][pre] = i;    //两个站点所在的线路号
+            pre = temp;
+        }
+    }
+    cin >> k;
+    for (int i = 1;i <= k;i++)
+    {
+        scanf("%d%d", &start, &end1);
+        minCnt = 99999, minTransfer = 99999;
+        tempPath.clear();
+        tempPath.push_back(start);
+        visit[start] = 1;
+        dfs(start, 0);
+        visit[start] = 0;
+        printf("%d\n", minCnt);
+        int preLine = 0, preTransfer = start;
+        int j;
+        for (j = 1;j < path.size();j++)
+        {
+            int currentLine = line[path[j]][path[j - 1]];
+            if (currentLine != preLine) {
+                if (preLine != 0)
+                    printf("Take Line#%d from %04d to %04d.\n", preLine, preTransfer, path[j - 1]);
+                preLine = currentLine;
+                preTransfer = path[j - 1];
+            }
+            
+        }
+        printf("Take Line#%d from %04d to %04d.\n", preLine, preTransfer, path[j - 1]);
+    }
+
+    return 0;
+}
