@@ -1,0 +1,65 @@
+【PAT1138】Postorder Traversal（25）
+
+题目传送门 https://www.patest.cn/contests/pat-a-practise/1138
+
+坑点：
+
+1. 唯一要注意的是递归太深，会导致堆栈溢出，所以要控制递归返回条件
+
+#include <iostream>
+#include <string>
+#include <string.h>
+#include <map>
+#include <set>
+#include <list>
+#include <vector>
+#include <deque>
+#include <unordered_set>
+#include <algorithm>
+#include <unordered_map>
+#include <stack>
+#include <cstdio>
+using namespace std;
+
+int preArr[50001];
+int inArr[50001];
+int n;
+int preIndex = 1;
+int flag = -1;
+
+int findHeadIndex(int head,int left,int right)
+{
+    for (int i = left;i <= right;i++)
+        if (inArr[i] == head)
+            return i;
+}
+
+void find(int left, int right)
+{
+    if (flag >-1 ||left > right)
+        return;
+    if (left == right && flag == -1)
+    {
+        cout << inArr[right];
+        flag++;
+        return;
+    }
+    int head = findHeadIndex(preArr[preIndex++], left, right);
+    find(left, head - 1);
+    find(head + 1, right);
+}
+
+int main()
+{
+    cin >> n;
+    for (int i = 1;i <= n;i++)
+    {
+        scanf("%d", &preArr[i]);
+    }
+    for (int i = 1;i <= n;i++)
+    {
+        scanf("%d", &inArr[i]);
+    }
+    find(1, n);
+    return 0;
+}
